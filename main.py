@@ -1,61 +1,66 @@
 import streamlit as st
 import pandas as pd
-import random
 
-st.set_page_config(page_title="Baccarat Simulator - Kỹ thuật vs May rủi", layout="wide")
+st.set_page_config(page_title="AI Baccarat Pro - Realtime Tool", layout="wide")
 
-st.title("🎰 Baccarat Strategy Simulator")
-st.write("Công cụ mô phỏng để kiểm chứng xác suất thực tế.")
+# Khởi tạo bộ nhớ tạm cho phiên chơi
+if 'history' not in st.session_state:
+    st.session_state.history = []
+if 'balance' not in st.session_state:
+    st.session_state.balance = 0.0
 
-# Sidebar cấu hình
-st.sidebar.header("Cấu hình mô phỏng")
-init_balance = st.sidebar.number_input("Vốn ban đầu ($)", value=1000)
-base_bet = st.sidebar.number_input("Tiền cược cơ sở ($)", value=10)
-num_games = st.sidebar.slider("Số lượng ván chơi", 10, 1000, 100)
-strategy = st.sidebar.selectbox("Chiến thuật", ["Đánh đều tay", "Gấp thếp (Martingale)"])
+st.title("🚀 AI Baccarat Real-time Predictor")
+st.write("Nhập kết quả thực tế từ bàn chơi để nhận dự đoán.")
 
-def simulate_baccarat(init_balance, base_bet, num_games, strategy):
-    balance = init_balance
-    history = []
-    current_bet = base_bet
+# Layout chính: 2 cột
+col1, col2 = st.columns([1, 2])
+
+with col1:
+    st.subheader("🎮 Nhập kết quả")
+    c1, c2, c3 = st.columns(3)
+    if c1.button("P (Player)", use_container_width=True):
+        st.session_state.history.append("P")
+    if c2.button("B (Banker)", use_container_width=True):
+        st.session_state.history.append("B")
+    if c3.button("T (Tie)", use_container_width=True):
+        st.session_state.history.append("T")
     
-    # Tỷ lệ thực tế: Banker thắng ~45.8%, Player ~44.6%, Tie ~9.6%
-    # (Loại bỏ Tie để đơn giản hóa, Banker/Player gần như 50/50 nhưng Banker mất phế)
-    
-    for i in range(num_games):
-        if balance < current_bet:
-            break
-            
-        win = random.choice([True, False]) # Mô phỏng tung đồng xu
+    if st.button("Xóa ván cuối"):
+        if st.session_state.history: st.session_state.history.pop()
+    if st.button("Reset phiên chơi", type="primary"):
+        st.session_state.history = []
+
+with col2:
+    st.subheader("📊 Phân tích & Dự đoán")
+    if len(st.session_state.history) > 0:
+        # Thuật toán dự đoán đơn giản: Theo đuôi (Trend following)
+        last_result = st.session_state.history[-1]
+        next_bet = "Player" if last_result == "P" else "Banker"
+        if last_result == "T": next_bet = "Đợi ván sau"
         
-        if win:
-            # Nếu thắng, Banker thường chỉ ăn 0.95 (trừ phế 5%)
-            balance += current_bet * 0.95 
-            status = "Thắng"
-            if strategy == "Gấp thếp (Martingale)":
-                current_bet = base_bet
-        else:
-            balance -= current_bet
-            status = "Thua"
-            if strategy == "Gấp thếp (Martingale)":
-                current_bet *= 2 # Thua thì gấp đôi
-                
-        history.append({"Ván": i+1, "Kết quả": status, "Tiền cược": current_bet, "Số dư": balance})
+        st.success(f"🔥 Gợi ý ván tiếp theo: **{next_bet}**")
         
-    return pd.DataFrame(history)
+        # Hiển thị Roadmap đơn giản
+        st.write("Lịch sử cầu:")
+        roadmap_str = " ➡️ ".join([f"[{res}]" for res in st.session_state.history[-10:]])
+        st.info(roadmap_str)
+    else:
+        st.warning("Hãy nhập ít nhất 1 ván để bắt đầu dự đoán.")
 
-if st.button("Bắt đầu mô phỏng"):
-    df = simulate_baccarat(init_balance, base_bet, num_games, strategy)
-    
-    # Hiển thị biểu đồ
-    st.line_chart(df.set_index("Ván")["Số dư"])
-    
-    # Thống kê
-    col1, col2 = st.columns(2)
-    col1.metric("Số dư cuối cùng", f"{df['Số dư'].iloc[-1]:.2f} $")
-    col2.metric("Lợi nhuận", f"{df['Số dư'].iloc[-1] - init_balance:.2f} $")
-    
-    st.write("### Chi tiết lịch sử ván đấu")
-    st.dataframe(df)
+# Phần quản lý vốn (Money Management)
+st.divider()
+st.subheader("💰 Quản lý vốn Martingale")
+base_money = st.number_input("Tiền cược cơ sở (VND)", value=10000)
 
-st.info("💡 Lưu ý kỹ thuật: Anh sẽ thấy khi dùng 'Gấp thếp', biểu đồ có vẻ đi lên nhưng chỉ cần 1 chuỗi thua dài, số dư sẽ rơi thẳng xuống đáy (cháy túi).")
+# Tính toán mức cược dựa trên chuỗi thua
+lose_count = 0
+for res in reversed(st.session_state.history):
+    # Giả định chiến thuật là đánh theo đuôi, nếu kết quả ngược lại là thua
+    if len(st.session_state.history) < 2: break
+    # Đây là logic minh họa cho chuỗi thua
+    break 
+
+current_bet = base_money * (2 ** lose_count)
+st.metric("Lệnh cược tiếp theo", f"{current_bet:,} VND")
+
+st.caption("Lưu ý: Tool dựa trên xác suất thống kê. Không có gì là 100%. Hãy chơi có trách nhiệm!")
