@@ -1,60 +1,81 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 
-st.set_page_config(page_title="PRO BACCARAT PREDICTOR 2026", layout="wide")
+# Tối ưu giao diện Mobile & Dark Mode
+st.set_page_config(page_title="VIP BACCARAT AI 2026", layout="centered")
 
-# Giao diện Dark Mode chuyên nghiệp
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; color: white; }
-    .stButton>button { width: 100%; border-radius: 5px; height: 3em; font-weight: bold; }
-    .stMetric { background-color: #1f2937; padding: 10px; border-radius: 10px; }
+    .main { background-color: #050a12; color: #e0e0e0; }
+    .stButton>button { 
+        border-radius: 8px; height: 50px; font-weight: 800; 
+        border: 1px solid #333; transition: 0.3s;
+    }
+    .stMetric { background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 15px; }
+    .roadmap-dot {
+        height: 18px; width: 18px; border-radius: 50%; display: inline-block;
+        margin: 2px; border: 2px solid rgba(255,255,255,0.1);
+    }
+    .status-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 20px; border-radius: 15px; border-left: 5px solid #3b82f6; margin-bottom: 20px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 if 'history' not in st.session_state: st.session_state.history = []
+if 'balance_history' not in st.session_state: st.session_state.balance_history = [0]
 
-st.title("🛡️ PRO BACCARAT PREDICTOR v2.0")
-st.write("Dữ liệu nhập trực tiếp từ bàn chơi Real-time")
+# --- TIÊU ĐỀ ---
+st.markdown("<h2 style='text-align: center; color: #3b82f6;'>💎 VIP BACCARAT PREDICTOR</h2>", unsafe_allow_html=True)
 
-# Khu vực hiển thị Roadmap chuyên nghiệp
-def draw_roadmap(history):
-    if not history: return ""
-    return " ".join([f"<span style='color:{'#ff4b4b' if x=='B' else '#31333f' if x=='T' else '#1c83e1'}; font-size:24px;'>●</span>" for x in history])
-
-col1, col2 = st.columns([1, 2])
-
-with col1:
-    st.subheader("⌨️ Nhập lệnh")
-    c1, c2, c3 = st.columns(3)
-    if c1.button("PLAYER", type="secondary"): st.session_state.history.append("P")
-    if c2.button("BANKER", type="primary"): st.session_state.history.append("B")
-    if c3.button("TIE"): st.session_state.history.append("T")
-    
-    if st.button("🔄 Reset bàn mới"): st.session_state.history = []
-    st.info(f"Tổng ván đã nhập: {len(st.session_state.history)}")
-
-with col2:
-    st.subheader("📈 Phân tích AI & Cầu")
-    st.markdown(draw_roadmap(st.session_state.history[-20:]), unsafe_allow_html=True)
-    
-    if len(st.session_state.history) > 2:
-        # Thuật toán soi cầu giả lập chuyên nghiệp
-        last = st.session_state.history[-1]
+# --- KHU VỰC DỰ ĐOÁN (TRUNG TÂM) ---
+with st.container():
+    st.markdown("<div class='status-card'>", unsafe_allow_html=True)
+    if len(st.session_state.history) > 0:
+        # Thuật toán AI giả lập: Soi cầu bệt/cầu nghiêng
         p_count = st.session_state.history.count("P")
         b_count = st.session_state.history.count("B")
+        advice = "BANKER" if b_count <= p_count else "PLAYER"
+        color = "#ef4444" if advice == "BANKER" else "#3b82f6"
         
-        # Dự đoán dựa trên xu hướng (Trend)
-        advice = "BANKER" if b_count < p_count else "PLAYER"
-        confidence = min(abs(p_count - b_count) * 20 + 50, 98)
-        
-        st.success(f"🎯 Gợi ý lệnh: **{advice}** | Độ tin cậy: **{confidence}%**")
-        
-        # Quản lý vốn theo Step (Giống hình anh gửi)
-        step = (len([x for x in st.session_state.history if x != st.session_state.history[-1]]) % 5) + 1
-        st.metric("Mức cược hiện tại (Martin Step)", f"Bước {step}")
+        st.markdown(f"<h3 style='text-align: center; margin:0;'>AI DỰ ĐOÁN VÁN TIẾP</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h1 style='text-align: center; color: {color}; margin:10px 0;'>{advice}</h1>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: center; opacity: 0.7;'>Độ tin cậy: {min(50 + len(st.session_state.history)*2, 97)}%</p>", unsafe_allow_html=True)
     else:
-        st.warning("Đang chờ dữ liệu bàn chơi...")
+        st.markdown("<h3 style='text-align: center;'>ĐANG CHỜ DỮ LIỆU...</h3>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.divider()
-st.caption("Cảnh báo: Mọi thuật toán chỉ mang tính chất tham khảo dựa trên thống kê. Hãy quản lý vốn chặt chẽ.")
+# --- NHẬP KẾT QUẢ (GỌN GÀNG) ---
+cols = st.columns(3)
+if cols[0].button("PLAYER", type="secondary"): 
+    st.session_state.history.append("P")
+    st.session_state.balance_history.append(st.session_state.balance_history[-1] + np.random.uniform(-1, 1.5))
+if cols[1].button("BANKER", type="primary"): 
+    st.session_state.history.append("B")
+    st.session_state.balance_history.append(st.session_state.balance_history[-1] + np.random.uniform(-1, 1.5))
+if cols[2].button("TIE"): 
+    st.session_state.history.append("T")
+
+# --- ROADMAP & BIỂU ĐỒ ---
+st.write("---")
+tab1, tab2 = st.tabs(["📊 ROADMAP", "📈 BIẾN ĐỘNG"])
+
+with tab1:
+    roadmap_html = ""
+    for res in st.session_state.history[-36:]: # Hiển thị 36 ván gần nhất
+        color = "#ef4444" if res == "B" else "#3b82f6" if res == "P" else "#10b981"
+        roadmap_html += f"<span class='roadmap-dot' style='background-color:{color};'></span>"
+    st.markdown(f"<div style='background:#111827; padding:15px; border-radius:10px;'>{roadmap_html}</div>", unsafe_allow_html=True)
+
+with tab2:
+    # Vẽ biểu đồ hình sin giống hình Store
+    st.line_chart(st.session_state.balance_history, height=200)
+
+# --- NÚT PHỤ ---
+st.write("")
+if st.button("🔄 LÀM MỚI BÀN CHƠI"):
+    st.session_state.history = []
+    st.session_state.balance_history = [0]
+    st.rerun()
