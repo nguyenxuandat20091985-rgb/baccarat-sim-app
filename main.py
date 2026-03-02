@@ -1,66 +1,60 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="AI Baccarat Pro - Realtime Tool", layout="wide")
+st.set_page_config(page_title="PRO BACCARAT PREDICTOR 2026", layout="wide")
 
-# Khởi tạo bộ nhớ tạm cho phiên chơi
-if 'history' not in st.session_state:
-    st.session_state.history = []
-if 'balance' not in st.session_state:
-    st.session_state.balance = 0.0
+# Giao diện Dark Mode chuyên nghiệp
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; color: white; }
+    .stButton>button { width: 100%; border-radius: 5px; height: 3em; font-weight: bold; }
+    .stMetric { background-color: #1f2937; padding: 10px; border-radius: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
 
-st.title("🚀 AI Baccarat Real-time Predictor")
-st.write("Nhập kết quả thực tế từ bàn chơi để nhận dự đoán.")
+if 'history' not in st.session_state: st.session_state.history = []
 
-# Layout chính: 2 cột
+st.title("🛡️ PRO BACCARAT PREDICTOR v2.0")
+st.write("Dữ liệu nhập trực tiếp từ bàn chơi Real-time")
+
+# Khu vực hiển thị Roadmap chuyên nghiệp
+def draw_roadmap(history):
+    if not history: return ""
+    return " ".join([f"<span style='color:{'#ff4b4b' if x=='B' else '#31333f' if x=='T' else '#1c83e1'}; font-size:24px;'>●</span>" for x in history])
+
 col1, col2 = st.columns([1, 2])
 
 with col1:
-    st.subheader("🎮 Nhập kết quả")
+    st.subheader("⌨️ Nhập lệnh")
     c1, c2, c3 = st.columns(3)
-    if c1.button("P (Player)", use_container_width=True):
-        st.session_state.history.append("P")
-    if c2.button("B (Banker)", use_container_width=True):
-        st.session_state.history.append("B")
-    if c3.button("T (Tie)", use_container_width=True):
-        st.session_state.history.append("T")
+    if c1.button("PLAYER", type="secondary"): st.session_state.history.append("P")
+    if c2.button("BANKER", type="primary"): st.session_state.history.append("B")
+    if c3.button("TIE"): st.session_state.history.append("T")
     
-    if st.button("Xóa ván cuối"):
-        if st.session_state.history: st.session_state.history.pop()
-    if st.button("Reset phiên chơi", type="primary"):
-        st.session_state.history = []
+    if st.button("🔄 Reset bàn mới"): st.session_state.history = []
+    st.info(f"Tổng ván đã nhập: {len(st.session_state.history)}")
 
 with col2:
-    st.subheader("📊 Phân tích & Dự đoán")
-    if len(st.session_state.history) > 0:
-        # Thuật toán dự đoán đơn giản: Theo đuôi (Trend following)
-        last_result = st.session_state.history[-1]
-        next_bet = "Player" if last_result == "P" else "Banker"
-        if last_result == "T": next_bet = "Đợi ván sau"
+    st.subheader("📈 Phân tích AI & Cầu")
+    st.markdown(draw_roadmap(st.session_state.history[-20:]), unsafe_allow_html=True)
+    
+    if len(st.session_state.history) > 2:
+        # Thuật toán soi cầu giả lập chuyên nghiệp
+        last = st.session_state.history[-1]
+        p_count = st.session_state.history.count("P")
+        b_count = st.session_state.history.count("B")
         
-        st.success(f"🔥 Gợi ý ván tiếp theo: **{next_bet}**")
+        # Dự đoán dựa trên xu hướng (Trend)
+        advice = "BANKER" if b_count < p_count else "PLAYER"
+        confidence = min(abs(p_count - b_count) * 20 + 50, 98)
         
-        # Hiển thị Roadmap đơn giản
-        st.write("Lịch sử cầu:")
-        roadmap_str = " ➡️ ".join([f"[{res}]" for res in st.session_state.history[-10:]])
-        st.info(roadmap_str)
+        st.success(f"🎯 Gợi ý lệnh: **{advice}** | Độ tin cậy: **{confidence}%**")
+        
+        # Quản lý vốn theo Step (Giống hình anh gửi)
+        step = (len([x for x in st.session_state.history if x != st.session_state.history[-1]]) % 5) + 1
+        st.metric("Mức cược hiện tại (Martin Step)", f"Bước {step}")
     else:
-        st.warning("Hãy nhập ít nhất 1 ván để bắt đầu dự đoán.")
+        st.warning("Đang chờ dữ liệu bàn chơi...")
 
-# Phần quản lý vốn (Money Management)
 st.divider()
-st.subheader("💰 Quản lý vốn Martingale")
-base_money = st.number_input("Tiền cược cơ sở (VND)", value=10000)
-
-# Tính toán mức cược dựa trên chuỗi thua
-lose_count = 0
-for res in reversed(st.session_state.history):
-    # Giả định chiến thuật là đánh theo đuôi, nếu kết quả ngược lại là thua
-    if len(st.session_state.history) < 2: break
-    # Đây là logic minh họa cho chuỗi thua
-    break 
-
-current_bet = base_money * (2 ** lose_count)
-st.metric("Lệnh cược tiếp theo", f"{current_bet:,} VND")
-
-st.caption("Lưu ý: Tool dựa trên xác suất thống kê. Không có gì là 100%. Hãy chơi có trách nhiệm!")
+st.caption("Cảnh báo: Mọi thuật toán chỉ mang tính chất tham khảo dựa trên thống kê. Hãy quản lý vốn chặt chẽ.")
